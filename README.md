@@ -8,7 +8,7 @@
 
 
 > [!TIP]  
-> The models and functionality in this repository are **integrated into [UniFace](https://github.com/yakhyo/uniface)** — an all-in-one face analysis toolkit.  
+> The models and functionality in this repository are **integrated into [UniFace](https://github.com/yakhyo/uniface)** — an all-in-one face analysis library.  
 > [![PyPI Version](https://img.shields.io/pypi/v/uniface.svg)](https://pypi.org/project/uniface/) [![GitHub Stars](https://img.shields.io/github/stars/yakhyo/uniface)](https://github.com/yakhyo/uniface/stargazers) [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 
@@ -325,5 +325,6 @@ The project is built on top of [face-parsing.PyTorch](https://github.com/zllrunn
 
 [![Star History Chart](https://api.star-history.com/svg?repos=yakhyo/face-parsing&type=Date)](https://star-history.com/#yakhyo/face-parsing&Date)
 -->
+
 
 
