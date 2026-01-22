@@ -105,8 +105,18 @@ def main(params):
     os.makedirs(f'./weights/{timestamp}', exist_ok=True)
 
     for epoch in range(start_epoch, params.epochs):
+        step_base = epoch * len(train_loader)
         train_one_epoch(
-            model, criterion, optimizer, train_loader, lr_scheduler, device, epoch, params.print_freq, scaler=None
+            model,
+            criterion,
+            optimizer,
+            train_loader,
+            lr_scheduler,
+            device,
+            epoch,
+            params.print_freq,
+            scaler=None,
+            step_base=step_base,
         )
         class_names = [
             'background',

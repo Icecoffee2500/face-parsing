@@ -69,6 +69,7 @@ def main(params):
     client_splits = split_indices(train_indices, num_clients, seed=params.seed)
     client_loaders = []
     for client_idx, indices in enumerate(client_splits):
+        print(f"Client {client_idx} training ...")
         client_dataset = Subset(train_dataset, indices)
         loader = DataLoader(
             client_dataset,
@@ -152,6 +153,7 @@ def main(params):
         client_models.append(client_model)
 
 
+    global_step = 0
     for epoch in range(params.epochs):
         client_states = []
         client_sizes = []
@@ -160,6 +162,7 @@ def main(params):
             client_models[client_idx].load_state_dict(global_model.state_dict())
             client_models[client_idx].train()
 
+            steps_in_client = len(client_loader)
             train_one_epoch(
                 client_models[client_idx],
                 criterion,
@@ -170,7 +173,9 @@ def main(params):
                 epoch,
                 params.print_freq,
                 scaler=None,
+                step_base=global_step,
             )
+            global_step += steps_in_client
 
             client_states.append({k: v.detach().cpu() for k, v in client_models[client_idx].state_dict().items()})
             client_sizes.append(len(client_loader.dataset))
@@ -178,7 +183,7 @@ def main(params):
         averaged_state = fedavg_state_dicts(client_states, client_sizes)
         global_model.load_state_dict(averaged_state)
 
-        step = (epoch + 1) * sum(len(loader) for loader in client_loaders)
+        step = global_step
         metrics = evaluate(
             global_model,
             criterion,

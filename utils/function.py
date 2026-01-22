@@ -18,7 +18,18 @@ def add_weight_decay(model, weight_decay=1e-5):
     return [{'params': no_decay, 'weight_decay': 0.0}, {'params': decay, 'weight_decay': weight_decay}]
 
 
-def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, device, epoch, print_freq, scaler=None):
+def train_one_epoch(
+    model,
+    criterion,
+    optimizer,
+    data_loader,
+    lr_scheduler,
+    device,
+    epoch,
+    print_freq,
+    scaler=None,
+    step_base=0,
+):
     model.train()
     batch_loss = []
     for batch_idx, (image, target) in enumerate(data_loader):
@@ -52,7 +63,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, devi
                 f'LR: {lr:.7f} '
             )
             if wandb is not None and wandb.run is not None:
-                step = epoch * len(data_loader) + batch_idx + 1
+                step = step_base + batch_idx + 1
                 wandb.log({'train/loss': loss.item(), 'train/lr': lr}, step=step)
     print(f'Avg batch loss: {np.mean(batch_loss):.7f}')
 
