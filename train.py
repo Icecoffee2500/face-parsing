@@ -180,7 +180,7 @@ def main(params):
     #  save final model
     state = model.state_dict()
     torch.save(state, f'./weights/{timestamp}/{params.backbone}.pt')
-    print(f'Final mIoU: {metrics['val/miou']:.6f}')
+    print(f"Final mIoU: {metrics['val/miou']:.6f}")
 
 
 if __name__ == '__main__':
