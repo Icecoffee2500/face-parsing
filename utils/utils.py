@@ -7,6 +7,9 @@ def parse_args():
 
     parser = argparse.ArgumentParser(description='Argument Parser for Training Configuration')
 
+    # General
+    parser.add_argument('--device-id', type=int, default=0, help='Device ID')
+
     # Dataset
     parser.add_argument('--num-classes', type=int, default=19, help='Number of classes in the dataset')
     parser.add_argument('--batch-size', type=int, default=16, help='Batch size for training')

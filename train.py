@@ -21,7 +21,8 @@ from utils.function import train_one_epoch, evaluate, add_weight_decay
 
 def main(params):
     random_seed(params.seed)
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device(f'cuda:{params.device_id}' if torch.cuda.is_available() else 'cpu')
+    print(f'Using device: {device}')
 
     images_dir = os.path.join(params.data_root, 'CelebA-HQ-img')
     labels_dir = os.path.join(params.data_root, 'CelebAMask-HQ-mask-anno')
@@ -101,6 +102,7 @@ def main(params):
         start_epoch = checkpoint['epoch'] + 1
 
     best_miou = 0.0
+    os.makedirs(f'./weights/{timestamp}', exist_ok=True)
 
     for epoch in range(start_epoch, params.epochs):
         train_one_epoch(
