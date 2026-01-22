@@ -69,7 +69,6 @@ def main(params):
     client_splits = split_indices(train_indices, num_clients, seed=params.seed)
     client_loaders = []
     for client_idx, indices in enumerate(client_splits):
-        print(f"Client {client_idx} training ...")
         client_dataset = Subset(train_dataset, indices)
         loader = DataLoader(
             client_dataset,
@@ -159,6 +158,7 @@ def main(params):
         client_sizes = []
 
         for client_idx, client_loader in enumerate(client_loaders):
+            print(f"Client {client_idx} training ...")
             client_models[client_idx].load_state_dict(global_model.state_dict())
             client_models[client_idx].train()
 
