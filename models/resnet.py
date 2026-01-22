@@ -192,7 +192,11 @@ def _resnet(
     model = ResNet(block, layers, **kwargs)
 
     if weights is not None:
-        model.load_state_dict(weights.get_state_dict(progress=progress, check_hash=True))
+        try:
+            state_dict = weights.get_state_dict(progress=progress, check_hash=True)
+        except TypeError:
+            state_dict = weights.get_state_dict(progress=progress)
+        model.load_state_dict(state_dict)
 
     return model
 
