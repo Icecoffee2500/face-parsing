@@ -40,16 +40,16 @@ def train_one_epoch(
         # with torch.cuda.amp.autocast(enabled=scaler is not None):
         with torch.amp.autocast(device_type=device.type, enabled=scaler is not None):
             output = model(image)
-            print(f"out shape: {output[0].shape}")
-            print(f"out16 shape: {output[1].shape}")
-            print(f"out32 shape: {output[2].shape}")
+            # print(f"out shape: {output[0].shape}")
+            # print(f"out16 shape: {output[1].shape}")
+            # print(f"out32 shape: {output[2].shape}")
 
-            print(f"output unique values: {torch.unique(output[0])}")
-            print(f"output16 unique values: {torch.unique(output[1])}")
-            print(f"output32 unique values: {torch.unique(output[2])}")
+            # print(f"output unique values: {torch.unique(output[0])}")
+            # print(f"output16 unique values: {torch.unique(output[1])}")
+            # print(f"output32 unique values: {torch.unique(output[2])}")
 
-            print(f"target shape: {target.shape}")
-            print(f"target unique values: {torch.unique(target)}")
+            # print(f"target shape: {target.shape}")
+            # print(f"target unique values: {torch.unique(target)}")
             loss = criterion(output, target)
 
         optimizer.zero_grad()
