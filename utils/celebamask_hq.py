@@ -101,7 +101,7 @@ class CelebAMaskHQ(Dataset):
             torchvision.transforms.ToTensor(),
             torchvision.transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
-        # self.train_transform = TrainTransform(image_size=(self.resolution, self.resolution))
+        self.train_transform = TrainTransform(image_size=(self.resolution, self.resolution))
 
         self.transforms_image_test = torchvision.transforms.Compose([
             torchvision.transforms.ToTensor(),
@@ -139,10 +139,9 @@ class CelebAMaskHQ(Dataset):
             label = F.resize(label, size=(self.resolution, self.resolution), interpolation=Image.NEAREST)
 
             # Convert to tensor
-            image = self.transforms_image(image)
-            label = F.to_tensor(label)
-            # image, label = self.train_transform(image, label)
+            # image = self.transforms_image(image)
             # label = F.to_tensor(label)
+            image, label = self.train_transform(image, label)
             label = torch.squeeze(label) * 255  # Assuming label images are in grayscale
             # label = label.to(dtype=torch.float)
             label = label.to(dtype=torch.long)

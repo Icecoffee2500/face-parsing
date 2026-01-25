@@ -1,1 +1,14 @@
-python train.py --batch-size 32 --wandb --wandb-log-images --backbone resnet34 --wandb-run-name ds-test-resnet34_warmup_3_bs32_gpu0 --device-id 0 --lr-warmup-epochs 3
+# no transform + don't ignore background (SegFaceCeleb)
+python train.py --batch-size 32 --wandb --wandb-log-images --backbone resnet34 --wandb-run-name newds-resnet34_warmup_1_bs32_gpu3 --device-id 2 --lr-warmup-epochs 1
+
+# no transform (SegFaceCeleb)
+python train.py --batch-size 32 --wandb --wandb-log-images --backbone resnet34 --wandb-run-name no-transform-SegFaceCeleb-resnet34_warmup_1_bs32 --lr-warmup-epochs 1 --ignore-background --device-id 0
+
+# all transform (SegFaceCeleb)
+python train.py --batch-size 32 --wandb --wandb-log-images --backbone resnet34 --wandb-run-name all-transform-SegFaceCeleb-resnet34_warmup_1_bs32 --lr-warmup-epochs 1 --ignore-background --device-id 1
+
+# RandomScale, RandomCrop 제외 (SegFaceCeleb)
+python train.py --batch-size 32 --wandb --wandb-log-images --backbone resnet34 --wandb-run-name no-crop_scale-SegFaceCeleb-resnet34_warmup_1_bs32 --lr-warmup-epochs 1 --ignore-background --device-id 2
+
+# no transform (BiSeNetCeleb)
+python train.py --batch-size 32 --wandb --wandb-log-images --backbone resnet34 --wandb-run-name no-transform-BiSeNetCeleb-resnet34_warmup_1_bs32 --lr-warmup-epochs 1 --ignore-background --device-id 2
