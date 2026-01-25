@@ -140,8 +140,8 @@ class CelebAMaskHQ(Dataset):
 
             # Convert to tensor
             # image = self.transforms_image(image)
-            # label = F.to_tensor(label)
             image, label = self.train_transform(image, label)
+            label = F.to_tensor(label)
             label = torch.squeeze(label) * 255  # Assuming label images are in grayscale
             # label = label.to(dtype=torch.float)
             label = label.to(dtype=torch.long)
