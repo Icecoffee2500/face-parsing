@@ -26,56 +26,26 @@ def main(params):
     device = torch.device(f'cuda:{params.device_id}' if torch.cuda.is_available() else 'cpu')
     print(f'Using device: {device}')
 
-    # images_dir = os.path.join(params.data_root, 'CelebA-HQ-img')
-    # labels_dir = os.path.join(params.data_root, 'CelebAMask-HQ-mask-anno')
+    images_dir = os.path.join(params.data_root, 'CelebA-HQ-img')
+    labels_dir = os.path.join(params.data_root, 'CelebAMask-HQ-mask-anno')
 
-    # base_dataset = CelebAMaskHQ(images_dir, labels_dir, transform=DefaultTransform())
-    # total_len = len(base_dataset)
-    # train_indices, val_indices = load_or_create_split(
-    #     params.split_file, total_len, val_ratio=params.val_ratio, seed=params.seed
-    # )
-
-    # train_dataset = Subset(
-    #     CelebAMaskHQ(images_dir, labels_dir, transform=TrainTransform(image_size=params.image_size)),
-    #     train_indices,
-    # )
-    # val_dataset = Subset(
-    #     CelebAMaskHQ(images_dir, labels_dir, transform=DefaultTransform()),
-    #     val_indices,
-    # )
-
-    # train_loader = DataLoader(
-    #     train_dataset,
-    #     batch_size=params.batch_size,
-    #     shuffle=True,
-    #     num_workers=params.num_workers,
-    #     pin_memory=True,
-    #     drop_last=True,
-    # )
-    # val_loader = DataLoader(
-    #     val_dataset,
-    #     batch_size=params.batch_size,
-    #     shuffle=False,
-    #     num_workers=params.num_workers,
-    #     pin_memory=True,
-    #     drop_last=False,
-    # )
-
-    # ------------------------------------------------------------
-    data_path = os.path.join(params.data_root)
-
-    train_dataset = CelebAMaskHQ_new(
-        data_path,
-        'train',
-        resolution=params.image_size[0]
+    base_dataset = CelebAMaskHQ(images_dir, labels_dir, transform=DefaultTransform())
+    total_len = len(base_dataset)
+    train_indices, val_indices = load_or_create_split(
+        params.split_file, total_len, val_ratio=params.val_ratio, seed=params.seed
     )
-    val_dataset = CelebAMaskHQ_new(
-        data_path,
-        'val',
-        resolution=params.image_size[0]
+
+    train_dataset = Subset(
+        CelebAMaskHQ(images_dir, labels_dir, transform=TrainTransform(image_size=params.image_size)),
+        train_indices,
     )
+    val_dataset = Subset(
+        CelebAMaskHQ(images_dir, labels_dir, transform=DefaultTransform()),
+        val_indices,
+    )
+
     train_loader = DataLoader(
-        dataset=train_dataset,
+        train_dataset,
         batch_size=params.batch_size,
         shuffle=True,
         num_workers=params.num_workers,
@@ -90,6 +60,36 @@ def main(params):
         pin_memory=True,
         drop_last=False,
     )
+
+    # ------------------------------------------------------------
+    # data_path = os.path.join(params.data_root)
+
+    # train_dataset = CelebAMaskHQ_new(
+    #     data_path,
+    #     'train',
+    #     resolution=params.image_size[0]
+    # )
+    # val_dataset = CelebAMaskHQ_new(
+    #     data_path,
+    #     'val',
+    #     resolution=params.image_size[0]
+    # )
+    # train_loader = DataLoader(
+    #     dataset=train_dataset,
+    #     batch_size=params.batch_size,
+    #     shuffle=True,
+    #     num_workers=params.num_workers,
+    #     pin_memory=True,
+    #     drop_last=True,
+    # )
+    # val_loader = DataLoader(
+    #     val_dataset,
+    #     batch_size=params.batch_size,
+    #     shuffle=False,
+    #     num_workers=params.num_workers,
+    #     pin_memory=True,
+    #     drop_last=False,
+    # )
     # ------------------------------------------------------------
 
     print(f'Train dataset size: {len(train_dataset)}')
