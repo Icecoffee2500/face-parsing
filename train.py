@@ -17,6 +17,7 @@ from utils.transform import TrainTransform, DefaultTransform
 from utils.dataset import CelebAMaskHQ, load_or_create_split
 from utils.utils import parse_args, random_seed
 from utils.function import train_one_epoch, evaluate, add_weight_decay
+from utils.lr_scheduler import WarmupPolyLrScheduler
 
 
 def main(params):
@@ -91,8 +92,16 @@ def main(params):
     )
 
     iters_per_epoch = len(train_loader)
-    lr_scheduler = PolynomialLR(
-        optimizer, total_iters=iters_per_epoch * (params.epochs - params.lr_warmup_epochs), power=params.power
+    # lr_scheduler = PolynomialLR(
+    #     optimizer, total_iters=iters_per_epoch * (params.epochs - params.lr_warmup_epochs), power=params.power
+    # )
+    lr_scheduler = WarmupPolyLrScheduler(
+        optimizer,
+        power=params.power, # 0.9
+        max_iter=iters_per_epoch * params.epochs,
+        warmup_iter=iters_per_epoch * params.lr_warmup_epochs,
+        warmup_ratio=0.1,
+        warmup='exp',
     )
     start_epoch = 0
     if params.resume:

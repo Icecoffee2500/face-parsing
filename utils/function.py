@@ -187,21 +187,18 @@ def evaluate(
     tps = confusion.diag()
     fps = confusion.sum(dim=0) - tps
     fns = confusion.sum(dim=1) - tps
-    valid = torch.ones(n_classes, dtype=torch.bool, device=confusion.device)
-    if lb_ignore is not None and 0 <= lb_ignore < n_classes:
-        valid[lb_ignore] = False
 
     ious = tps / (tps + fps + fns + 1)
-    miou = ious[valid].nanmean().item()
+    miou = ious.nanmean().item()
 
     macro_precision = tps / (tps + fps + 1)
     macro_recall = tps / (tps + fns + 1)
     f1_scores = (2 * macro_precision * macro_recall) / (macro_precision + macro_recall + 1e-6)
-    macro_f1 = f1_scores[valid].nanmean().item()
+    macro_f1 = f1_scores.nanmean().item()
 
-    tps_ = tps[valid].sum()
-    fps_ = fps[valid].sum()
-    fns_ = fns[valid].sum()
+    tps_ = tps.sum()
+    fps_ = fps.sum()
+    fns_ = fns.sum()
     micro_precision = tps_ / (tps_ + fps_ + 1)
     micro_recall = tps_ / (tps_ + fns_ + 1)
     micro_f1 = (2 * micro_precision * micro_recall / (micro_precision + micro_recall + 1e-6)).item()
@@ -214,16 +211,12 @@ def evaluate(
     )
     per_iou = ious.detach().cpu().numpy()
     per_f1 = f1_scores.detach().cpu().numpy()
-    valid_mask = valid.detach().cpu().numpy()
     names = class_names or [f'class_{idx:02d}' for idx in range(n_classes)]
     if len(names) != n_classes:
         names = [f'class_{idx:02d}' for idx in range(n_classes)]
-    names = [name for idx, name in enumerate(names) if valid_mask[idx]]
-    per_iou_valid = per_iou[valid_mask]
-    per_f1_valid = per_f1[valid_mask]
     for idx, name in enumerate(names):
-        iou_val = per_iou_valid[idx]
-        f1_val = per_f1_valid[idx]
+        iou_val = per_iou[idx]
+        f1_val = per_f1[idx]
         print(f'{name} | IoU: {iou_val:.6f} | F1: {f1_val:.6f}')
 
     return {
@@ -231,7 +224,7 @@ def evaluate(
         'val/miou': miou,
         'val/macro_f1': macro_f1,
         'val/micro_f1': micro_f1,
-        'val/per_iou': per_iou_valid,
-        'val/per_f1': per_f1_valid,
+        'val/per_iou': per_iou,
+        'val/per_f1': per_f1,
         'val/class_names': names,
     }
