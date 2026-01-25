@@ -32,10 +32,14 @@ def train_one_epoch(
 ):
     model.train()
     batch_loss = []
-    for batch_idx, (image, target) in enumerate(data_loader):
+    # for batch_idx, (image, target) in enumerate(data_loader):
+    for batch_idx, batch in enumerate(data_loader):
+        image, target = batch['image'], batch['label']['segmentation']
         start_time = time.time()
         image = image.to(device)
         target = target.to(device)
+        # print(f"image shape: {image.shape}")
+        # print(f"target shape: {target.shape}")
 
         # with torch.cuda.amp.autocast(enabled=scaler is not None):
         with torch.amp.autocast(device_type=device.type, enabled=scaler is not None):
@@ -98,7 +102,9 @@ def evaluate(
     confusion = torch.zeros((n_classes, n_classes), device=device)
     vis_grid = None
     with torch.no_grad():
-        for batch_idx, (image, target) in enumerate(data_loader):
+        # for batch_idx, (image, target) in enumerate(data_loader):
+        for batch_idx, batch in enumerate(data_loader):
+            image, target = batch['image'], batch['label']['segmentation']
             start_time = time.time()
             image = image.to(device)
             target = target.to(device)
