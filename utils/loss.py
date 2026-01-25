@@ -3,7 +3,7 @@ import torch.nn as nn
 
 
 class OhemCELoss(nn.Module):
-    def __init__(self, thresh: float, min_kept: int, ignore_index: int | None = None) -> None:
+    def __init__(self, thresh: float, min_kept: int, ignore_index=None) -> None:
         super().__init__()
         self.thresh = torch.log(torch.tensor(1 / thresh, dtype=torch.float))
         self.min_kept = min_kept
@@ -29,7 +29,7 @@ class OhemCELoss(nn.Module):
 
 
 class OhemLossWrapper:
-    def __init__(self, thresh: float, min_kept: int, ignore_index: int | None = None) -> None:
+    def __init__(self, thresh: float, min_kept: int, ignore_index=None) -> None:
         self.loss = OhemCELoss(thresh=thresh, min_kept=min_kept, ignore_index=ignore_index)
 
     def __call__(self, output, labels):
