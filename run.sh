@@ -1,0 +1,1 @@
+python train.py --batch-size 32 --wandb --wandb-log-images --backbone resnet34 --wandb-run-name resnet34_warmup_3   _bs32_gpu0 --device-id 0--lr-warmup-epochs 3
