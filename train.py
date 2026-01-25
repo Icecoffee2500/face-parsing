@@ -80,8 +80,9 @@ def main(params):
             config=vars(params),
         )
 
+    ignore_index = 0 if params.ignore_background else None
     n_min = params.batch_size * params.image_size[0] * params.image_size[1] // 16
-    criterion = OhemLossWrapper(thresh=params.score_thres, min_kept=n_min)
+    criterion = OhemLossWrapper(thresh=params.score_thres, min_kept=n_min, ignore_index=ignore_index)
 
     # optimizer
     parameters = add_weight_decay(model, params.weight_decay)
@@ -146,6 +147,7 @@ def main(params):
             val_loader,
             device,
             params.num_classes,
+            lb_ignore=0 if params.ignore_background else 255,
             class_names=class_names,
             print_freq=params.print_freq,
             log_images=params.wandb and params.wandb_log_images,

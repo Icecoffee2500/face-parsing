@@ -14,7 +14,8 @@ def parse_args():
     parser.add_argument('--num-classes', type=int, default=19, help='Number of classes in the dataset')
     parser.add_argument('--batch-size', type=int, default=16, help='Batch size for training')
     parser.add_argument('--num-workers', type=int, default=12, help='Number of workers for data loading')
-    parser.add_argument('--image-size', type=int, nargs=2, default=[448, 448], help='Size of input images')
+    # parser.add_argument('--image-size', type=int, nargs=2, default=[448, 448], help='Size of input images')
+    parser.add_argument('--label-size', type=int, nargs=2, default=[512, 512], help='Size of input labels')
     parser.add_argument(
         '--data-root', type=str, default='dataset/CelebAMask-HQ/', help='Root directory of the dataset'
     )
@@ -33,6 +34,11 @@ def parse_args():
     parser.add_argument('--lr-warmup-epochs', type=int, default=1, help='Number of warmup epochs')
     parser.add_argument('--warmup-start-lr', type=float, default=1e-5, help='Warmup starting learning rate')
     parser.add_argument('--score-thres', type=float, default=0.7, help='Score threshold')
+    parser.add_argument(
+        '--ignore-background',
+        action='store_true',
+        help='Ignore background (class 0) in loss and metrics',
+    )
 
     # Training loop
     parser.add_argument('--epochs', type=int, default=100, help='Number of epochs for training')
