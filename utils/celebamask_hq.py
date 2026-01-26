@@ -125,7 +125,7 @@ class CelebAMaskHQ(Dataset):
 
             if label_fname.exists():
                 # numpy array (512x512) - Resolution size / 각 pixel은 0 혹은 255 (Gray Scale)
-                mask = _cached_imread(label_fname, cv2.IMREAD_GRAYSCALE)
+                mask = _cached_imread(str(label_fname), cv2.IMREAD_GRAYSCALE)
                 # 해당 label인 픽셀(mask > 0)에 해당 label value를 부여
                 label = np.where(mask > 0, np.ones_like(label) * label_value, label)
         return label
