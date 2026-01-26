@@ -4,11 +4,13 @@ import importlib
 import torch
 from torch.utils.data import DataLoader, Subset
 from torch.optim.lr_scheduler import PolynomialLR
+from pathlib import Path
 
 from models.bisenet import BiSeNet
 from utils.loss import OhemLossWrapper
 from utils.transform import TrainTransform, DefaultTransform
-from utils.dataset import CelebAMaskHQ, load_or_create_split
+# from utils.dataset import CelebAMaskHQ, load_or_create_split
+from utils.celebamask_hq import CelebAMaskHQ
 from utils.utils import parse_args, random_seed
 from utils.function import train_one_epoch, evaluate, add_weight_decay
 
@@ -51,22 +53,39 @@ def main(params):
 
     num_clients = 3
 
-    images_dir = os.path.join(params.data_root, 'CelebA-HQ-img')
-    labels_dir = os.path.join(params.data_root, 'CelebAMask-HQ-mask-anno')
+    # images_dir = os.path.join(params.data_root, 'CelebA-HQ-img')
+    # labels_dir = os.path.join(params.data_root, 'CelebAMask-HQ-mask-anno')
 
-    base_dataset = CelebAMaskHQ(images_dir, labels_dir, transform=DefaultTransform())
-    total_len = len(base_dataset)
-    train_indices, val_indices = load_or_create_split(
-        params.split_file, total_len, val_ratio=params.val_ratio, seed=params.seed
+    # base_dataset = CelebAMaskHQ(images_dir, labels_dir, transform=DefaultTransform())
+    # total_len = len(base_dataset)
+    # train_indices, val_indices = load_or_create_split(
+    #     params.split_file, total_len, val_ratio=params.val_ratio, seed=params.seed
+    # )
+
+    # train_dataset = CelebAMaskHQ(images_dir, labels_dir, transform=TrainTransform(image_size=params.image_size))
+    # val_dataset = Subset(
+    #     CelebAMaskHQ(images_dir, labels_dir, transform=DefaultTransform()),
+    #     val_indices,
+    # )
+    # client_splits = split_indices(train_indices, num_clients, seed=params.seed)
+
+    
+    data_path = Path(params.data_root)
+
+    train_dataset = CelebAMaskHQ(
+        data_path,
+        'train',
+        resolution=params.image_size
+    )
+    val_dataset = CelebAMaskHQ(
+        data_path,
+        'val',
+        resolution=params.image_size
     )
 
-    train_dataset = CelebAMaskHQ(images_dir, labels_dir, transform=TrainTransform(image_size=params.image_size))
-    val_dataset = Subset(
-        CelebAMaskHQ(images_dir, labels_dir, transform=DefaultTransform()),
-        val_indices,
-    )
-
+    train_indices = list(range(len(train_dataset)))
     client_splits = split_indices(train_indices, num_clients, seed=params.seed)
+
     client_loaders = []
     for client_idx, indices in enumerate(client_splits):
         client_dataset = Subset(train_dataset, indices)
@@ -90,7 +109,8 @@ def main(params):
         drop_last=False,
     )
 
-    print(f'Train dataset size: {len(train_indices)}')
+    print(f'Train dataset size: {len(train_dataset)}')
+    print(f"client train dataset sizes: {[len(split) for split in client_splits]}")
     print(f'Val dataset size: {len(val_dataset)}')
 
     global_model = BiSeNet(num_classes=params.num_classes, backbone_name=params.backbone).to(device)

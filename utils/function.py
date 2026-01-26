@@ -32,9 +32,9 @@ def train_one_epoch(
 ):
     model.train()
     batch_loss = []
-    for batch_idx, (image, target) in enumerate(data_loader):
-    # for batch_idx, batch in enumerate(data_loader):
-    #     image, target = batch['image'], batch['label']['segmentation']
+    # for batch_idx, (image, target) in enumerate(data_loader):
+    for batch_idx, batch in enumerate(data_loader):
+        image, target = batch['image'], batch['label']['segmentation']
         start_time = time.time()
         image = image.to(device)
         target = target.to(device)
@@ -90,21 +90,21 @@ def evaluate(
     confusion = torch.zeros((n_classes, n_classes), device=device)
     vis_grid = None
     with torch.no_grad():
-        for batch_idx, (image, target) in enumerate(data_loader):
-        # for batch_idx, batch in enumerate(data_loader):
-        #     image, target = batch['image'], batch['label']['segmentation']
+        # for batch_idx, (image, target) in enumerate(data_loader):
+        for batch_idx, batch in enumerate(data_loader):
+            image, target = batch['image'], batch['label']['segmentation']
             start_time = time.time()
             image = image.to(device)
             target = target.to(device)
             output = model(image)
-            loss = criterion(output, target)
-            losses.append(loss.item())
-            if (batch_idx + 1) % print_freq == 0:
-                print(
-                    f'Val: [{batch_idx + 1:>4d}/{len(data_loader)}] '
-                    f'Loss: {loss.item():.4f}  '
-                    f'Time: {(time.time() - start_time):.3f}s'
-                )
+            # loss = criterion(output, target)
+            # losses.append(loss.item())
+            # if (batch_idx + 1) % print_freq == 0:
+            #     print(
+            #         f'Val: [{batch_idx + 1:>4d}/{len(data_loader)}] '
+            #         f'Loss: {loss.item():.4f}  '
+            #         f'Time: {(time.time() - start_time):.3f}s'
+            #     )
             logits = output[0] if isinstance(output, (list, tuple)) else output
             preds_full = torch.argmax(logits, dim=1)
             keep = target != lb_ignore
