@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 import time
 import wandb
@@ -18,6 +19,58 @@ def add_weight_decay(model, weight_decay=1e-5):
     return [{'params': no_decay, 'weight_decay': 0.0}, {'params': decay, 'weight_decay': weight_decay}]
 
 
+# def train_one_epoch(
+#     model,
+#     criterion,
+#     optimizer,
+#     data_loader,
+#     lr_scheduler,
+#     device,
+#     epoch,
+#     print_freq,
+#     scaler=None,
+#     step_base=0,
+# ):
+#     model.train()
+#     batch_loss = []
+#     # for batch_idx, (image, target) in enumerate(data_loader):
+#     for batch_idx, batch in enumerate(data_loader):
+#         image, target = batch['image'], batch['label']['segmentation']
+#         # print(f"image shape: {image.shape}, target shape: {target.shape}")
+#         start_time = time.time()
+#         image = image.to(device)
+#         target = target.to(device)
+
+#         # with torch.cuda.amp.autocast(enabled=scaler is not None):
+#         with torch.amp.autocast(device_type=device.type, enabled=scaler is not None):
+#             output = model(image)
+#             loss = criterion(output, target)
+
+#         optimizer.zero_grad()
+#         if scaler is not None:
+#             scaler.scale(loss).backward()
+#             scaler.step(optimizer)
+#             scaler.update()
+#         else:
+#             loss.backward()
+#             optimizer.step()
+
+#         lr_scheduler.step()
+#         batch_loss.append(loss.item())
+
+#         if (batch_idx + 1) % print_freq == 0:
+#             lr = optimizer.param_groups[0]['lr']
+#             print(
+#                 f'Train: [{epoch:>3d}][{batch_idx + 1:>4d}/{len(data_loader)}] '
+#                 f'Loss: {loss.item():.4f}  '
+#                 f'Time: {(time.time() - start_time):.3f}s '
+#                 f'LR: {lr:.7f} '
+#             )
+#             if wandb is not None and wandb.run is not None:
+#                 step = step_base + batch_idx + 1
+#                 wandb.log({'train/loss': loss.item(), 'train/lr': lr}, step=step)
+#     print(f'Avg batch loss: {np.mean(batch_loss):.7f}')
+
 def train_one_epoch(
     model,
     criterion,
@@ -29,6 +82,9 @@ def train_one_epoch(
     print_freq,
     scaler=None,
     step_base=0,
+    mrkd=False,
+    mrkd_resolutions=None,
+    mrkd_weight=1.0,
 ):
     model.train()
     batch_loss = []
@@ -40,10 +96,23 @@ def train_one_epoch(
         image = image.to(device)
         target = target.to(device)
 
-        # with torch.cuda.amp.autocast(enabled=scaler is not None):
-        with torch.amp.autocast(device_type=device.type, enabled=scaler is not None):
-            output = model(image)
-            loss = criterion(output, target)
+        if mrkd:
+            # Multi-Resolution Knowledge Distillation
+            loss = _train_with_mrkd(
+                image,
+                target,
+                model,
+                criterion,
+                device,
+                scaler,
+                mrkd_resolutions=mrkd_resolutions,
+                mrkd_weight=mrkd_weight,
+            )
+        else:
+            # Standard training
+            with torch.amp.autocast(device_type=device.type, enabled=scaler is not None):
+                output = model(image)
+                loss = criterion(output, target)
 
         optimizer.zero_grad()
         if scaler is not None:
@@ -69,6 +138,60 @@ def train_one_epoch(
                 step = step_base + batch_idx + 1
                 wandb.log({'train/loss': loss.item(), 'train/lr': lr}, step=step)
     print(f'Avg batch loss: {np.mean(batch_loss):.7f}')
+
+def _train_with_mrkd(
+    image,
+    target,
+    model,
+    criterion,
+    device,
+    scaler,
+    mrkd_resolutions=None,
+    mrkd_weight=1.0,
+):
+    if not mrkd_resolutions:
+        mrkd_resolutions = [image.shape[-1]]
+
+    # High -> low
+    mrkd_resolutions = sorted(set(mrkd_resolutions), reverse=True)
+
+    total_loss = 0.0
+    teacher_logits = None
+
+    for res in mrkd_resolutions:
+        if res == image.shape[-1]:
+            res_image = image
+            res_target = target
+        else:
+            res_image = F.interpolate(image, size=(res, res), mode='bilinear', align_corners=False)
+            res_target = F.interpolate(
+                target.unsqueeze(1).float(),
+                size=(res, res),
+                mode='nearest',
+            ).squeeze(1).long()
+
+        with torch.amp.autocast(device_type=device.type, enabled=scaler is not None):
+            output = model(res_image)
+            gt_loss = criterion(output, res_target)
+            total_loss = total_loss + gt_loss
+
+            if teacher_logits is not None:
+                student_logits = output[0] if isinstance(output, (list, tuple)) else output
+                teacher_resized = F.interpolate(
+                    teacher_logits,
+                    size=student_logits.shape[2:],
+                    mode='bilinear',
+                    align_corners=False,
+                )
+                pseudo_labels = torch.argmax(teacher_resized.detach(), dim=1)
+                kd_loss = criterion(output, pseudo_labels)
+                total_loss = total_loss + (mrkd_weight * kd_loss)
+
+        teacher_logits = (output[0] if isinstance(output, (list, tuple)) else output).detach()
+    
+    total_loss = total_loss / len(mrkd_resolutions)
+
+    return total_loss
 
 
 def evaluate(

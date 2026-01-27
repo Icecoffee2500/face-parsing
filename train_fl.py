@@ -77,6 +77,7 @@ def main(params):
         client_resolutions = params.client_resolutions
         if len(client_resolutions) != num_clients:
             raise ValueError(f'client_resolutions must have {num_clients} values')
+    all_resolutions = sorted(set(client_resolutions), reverse=True)
 
     data_path = Path(params.data_root)
 
@@ -195,6 +196,10 @@ def main(params):
             client_models[client_idx].train()
 
             steps_in_client = len(client_loader)
+            client_res = client_resolutions[client_idx]
+            mrkd_resolutions = [r for r in all_resolutions if r <= client_res]
+            if not mrkd_resolutions:
+                mrkd_resolutions = [client_res]
             train_one_epoch(
                 client_models[client_idx],
                 criterion,
@@ -206,6 +211,9 @@ def main(params):
                 params.print_freq,
                 scaler=None,
                 step_base=global_step,
+                mrkd=params.mrkd and len(mrkd_resolutions) > 1,
+                mrkd_resolutions=mrkd_resolutions,
+                mrkd_weight=1.0,
             )
             global_step += steps_in_client
 

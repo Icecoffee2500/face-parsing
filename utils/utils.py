@@ -60,6 +60,7 @@ def parse_args():
         default=None,
         help='Client image resolutions (e.g., 512 256 128)',
     )
+    parser.add_argument('--mrkd', action='store_true', help='Enable Multi-Resolution Knowledge Distillation')
 
     args = parser.parse_args()
     return args
