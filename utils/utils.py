@@ -53,6 +53,13 @@ def parse_args():
     parser.add_argument('--wandb-run-name', type=str, default=None, help='W&B run name (optional)')
     parser.add_argument('--wandb-log-images', action='store_true', help='Log sample images to W&B')
     parser.add_argument('--wandb-image-count', type=int, default=4, help='Number of images to log per eval')
+    parser.add_argument(
+        '--client-resolutions',
+        type=int,
+        nargs='*',
+        default=None,
+        help='Client image resolutions (e.g., 512 256 128)',
+    )
 
     args = parser.parse_args()
     return args

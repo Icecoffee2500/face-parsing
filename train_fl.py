@@ -70,17 +70,25 @@ def main(params):
     # client_splits = split_indices(train_indices, num_clients, seed=params.seed)
 
     
+    base_res = params.image_size[0] if isinstance(params.image_size, (list, tuple)) else params.image_size
+    if params.client_resolutions is None:
+        client_resolutions = [base_res] * num_clients
+    else:
+        client_resolutions = params.client_resolutions
+        if len(client_resolutions) != num_clients:
+            raise ValueError(f'client_resolutions must have {num_clients} values')
+
     data_path = Path(params.data_root)
 
     train_dataset = CelebAMaskHQ(
         data_path,
         'train',
-        resolution=params.image_size
+        resolution=base_res
     )
     val_dataset = CelebAMaskHQ(
         data_path,
         'val',
-        resolution=params.image_size
+        resolution=base_res
     )
 
     train_indices = list(range(len(train_dataset)))
@@ -88,7 +96,10 @@ def main(params):
 
     client_loaders = []
     for client_idx, indices in enumerate(client_splits):
-        client_dataset = Subset(train_dataset, indices)
+        client_dataset = Subset(
+            CelebAMaskHQ(data_path, 'train', resolution=client_resolutions[client_idx]),
+            indices,
+        )
         loader = DataLoader(
             client_dataset,
             batch_size=params.batch_size,

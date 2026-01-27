@@ -35,6 +35,7 @@ def train_one_epoch(
     # for batch_idx, (image, target) in enumerate(data_loader):
     for batch_idx, batch in enumerate(data_loader):
         image, target = batch['image'], batch['label']['segmentation']
+        # print(f"image shape: {image.shape}, target shape: {target.shape}")
         start_time = time.time()
         image = image.to(device)
         target = target.to(device)
