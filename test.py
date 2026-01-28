@@ -32,6 +32,13 @@ def main(params):
     device = torch.device(f'cuda:{params.device_id}' if torch.cuda.is_available() else 'cpu')
     print(f'Using device: {device}')
 
+    weights_name = os.path.basename(params.weights)
+    if params.backbone == 'resnet18':
+        if 'resnet34' in weights_name:
+            params.backbone = 'resnet34'
+        elif 'resnet50' in weights_name:
+            params.backbone = 'resnet50'
+
     val_dataset = CelebAMaskHQ(
         params.data_root,
         'val',
@@ -47,7 +54,15 @@ def main(params):
     )
 
     model = BiSeNet(num_classes=params.num_classes, backbone_name=params.backbone)
-    model.load_state_dict(torch.load(params.weights, map_location='cpu'))
+    state = torch.load(params.weights, map_location='cpu')
+    if isinstance(state, dict) and 'model' in state:
+        state = state['model']
+    try:
+        model.load_state_dict(state)
+    except RuntimeError as exc:
+        raise RuntimeError(
+            f'Failed to load weights. Check backbone with --backbone. Error: {exc}'
+        ) from exc
     model.to(device)
 
     ignore_index = 0 if params.ignore_background else None
