@@ -15,7 +15,14 @@ def parse_args():
     parser.add_argument('--batch-size', type=int, default=16, help='Batch size for training')
     parser.add_argument('--num-workers', type=int, default=12, help='Number of workers for data loading')
     # parser.add_argument('--image-size', type=int, nargs=2, default=[448, 448], help='Size of input images')
-    parser.add_argument('--image-size', type=int, nargs=2, default=[512, 512], help='Size of input labels')
+    # parser.add_argument('--image-size', type=int, nargs=2, default=[512, 512], help='Size of input labels')
+    parser.add_argument(
+        '--cl-resolutions',
+        type=int,
+        nargs='*',
+        default=[512],
+        help='Centralized multi-resolution list (e.g., 512 256 128)',
+    )
     parser.add_argument(
         '--data-root', type=str, default='dataset/CelebAMask-HQ/', help='Root directory of the dataset'
     )

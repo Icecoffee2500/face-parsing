@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 import torch
+import random
 import importlib
 from pathlib import Path
 try:
@@ -8,7 +9,7 @@ try:
 except ImportError:
     wandb = None
 
-from torch.utils.data import DataLoader, Subset
+from torch.utils.data import DataLoader, Subset, ConcatDataset, Sampler
 from torch.optim.lr_scheduler import PolynomialLR
 
 from models.bisenet import BiSeNet
@@ -21,6 +22,34 @@ from utils.utils import parse_args, random_seed
 from utils.function import train_one_epoch, evaluate, add_weight_decay
 from utils.lr_scheduler import WarmupPolyLrScheduler
 
+class ResolutionBatchSampler(Sampler):
+    def __init__(self, groups, batch_size, drop_last=True, seed=42):
+        self.groups = groups
+        self.batch_size = batch_size
+        self.drop_last = drop_last
+        self.seed = seed
+
+    def __iter__(self):
+        rng = random.Random(self.seed)
+        batches = []
+        for group in self.groups:
+            indices = list(group)
+            rng.shuffle(indices)
+            for i in range(0, len(indices), self.batch_size):
+                batch = indices[i:i + self.batch_size]
+                if len(batch) < self.batch_size and self.drop_last:
+                    continue
+                batches.append(batch)
+        rng.shuffle(batches)
+        for batch in batches:
+            yield batch
+
+    def __len__(self):
+        total = 0
+        for group in self.groups:
+            n = len(group)
+            total += n // self.batch_size if self.drop_last else (n + self.batch_size - 1) // self.batch_size
+        return total
 
 def main(params):
     random_seed(params.seed)
@@ -66,23 +95,54 @@ def main(params):
     # ------------------------------------------------------------
     data_path = Path(params.data_root)
 
-    train_dataset = CelebAMaskHQ(
+    cl_resolutions = params.cl_resolutions or [512]
+    cl_resolutions = [int(r) for r in cl_resolutions]
+    cl_resolutions = sorted(set(cl_resolutions), reverse=True)
+    base_res = cl_resolutions[0]
+
+    base_train = CelebAMaskHQ(
         data_path,
         'train',
-        resolution=params.image_size
+        resolution=[base_res, base_res],
     )
     val_dataset = CelebAMaskHQ(
         data_path,
         'val',
-        resolution=params.image_size
+        resolution=[base_res, base_res],
+    )
+
+    # Split indices evenly across resolutions
+    all_indices = list(range(len(base_train)))
+    rng = random.Random(params.seed)
+    rng.shuffle(all_indices)
+    num_groups = len(cl_resolutions)
+    splits = [all_indices[i::num_groups] for i in range(num_groups)]
+
+    subsets = []
+    for res, indices in zip(cl_resolutions, splits):
+        ds = CelebAMaskHQ(data_path, 'train', resolution=[res, res])
+        subsets.append(Subset(ds, indices))
+
+    train_dataset = ConcatDataset(subsets)
+
+    
+    # Build global indices for each subset in the concatenated dataset
+    group_indices = []
+    offset = 0
+    for subset in subsets:
+        group_indices.append(list(range(offset, offset + len(subset))))
+        offset += len(subset)
+    batch_sampler = ResolutionBatchSampler(
+        group_indices,
+        batch_size=params.batch_size,
+        drop_last=True,
+        seed=params.seed,
     )
     train_loader = DataLoader(
         dataset=train_dataset,
-        batch_size=params.batch_size,
-        shuffle=True,
+        batch_sampler=batch_sampler,
         num_workers=params.num_workers,
         pin_memory=True,
-        drop_last=True,
     )
     val_loader = DataLoader(
         val_dataset,
@@ -95,6 +155,7 @@ def main(params):
     # ------------------------------------------------------------
 
     print(f'Train dataset size: {len(train_dataset)}')
+    print(f"Train split sizes: {[len(s) for s in splits]}")
     print(f'Val dataset size: {len(val_dataset)}')
 
     # model
@@ -116,7 +177,7 @@ def main(params):
         )
 
     ignore_index = 0 if params.ignore_background else None
-    n_min = params.batch_size * params.image_size[0] * params.image_size[1] // 16
+    n_min = params.batch_size * base_res * base_res // 16
     criterion = OhemLossWrapper(thresh=params.score_thres, min_kept=n_min, ignore_index=ignore_index)
 
     # optimizer
