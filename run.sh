@@ -24,3 +24,4 @@ python train_fl.py --batch-size 32 --wandb --wandb-log-images --backbone resnet3
 
 # [CL] multi-resolution training
 python train.py --batch-size 32 --wandb --backbone resnet34 --wandb-run-name mr-512_256_128-resnet34_warmup_1_bs32_gpu3 --cl-resolutions 512 256 128 --device-id 0
+python train.py --batch-size 32 --wandb --backbone resnet34 --wandb-run-name mr-512_384_256-resnet34_warmup_1_bs32_gpu3 --cl-resolutions 512 384 256 --device-id 1
