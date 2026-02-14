@@ -10,6 +10,7 @@ from torch import nn, Tensor
 import torch.nn.functional as F
 
 from models.resnet import resnet18, resnet34
+from models.vision_transformer import vit_small
 from typing import Union, Optional, Tuple
 
 
@@ -110,6 +111,8 @@ class ContextPath(nn.Module):
             self.backbone = resnet18()
         elif backbone_name == 'resnet34':
             self.backbone = resnet34()
+        elif backbone_name == 'vit_small':
+            self.backbone = vit_small()
         else:
             raise Exception(f'Available backbone modules: resnet18, resnet34')
 
@@ -122,6 +125,7 @@ class ContextPath(nn.Module):
     def forward(self, x: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
         # features from backbone
         feat8, feat16, feat32 = self.backbone(x)
+        # print(f"feat8: {feat8.shape}, feat16: {feat16.shape}, feat32: {feat32.shape}")
 
         h8, w8 = feat8.size()[2:]
         h16, w16 = feat16.size()[2:]

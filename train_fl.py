@@ -70,13 +70,12 @@ def main(params):
     # client_splits = split_indices(train_indices, num_clients, seed=params.seed)
 
     
-    base_res = params.image_size[0] if isinstance(params.image_size, (list, tuple)) else params.image_size
-    if params.client_resolutions is None:
-        client_resolutions = [base_res] * num_clients
-    else:
-        client_resolutions = params.client_resolutions
-        if len(client_resolutions) != num_clients:
-            raise ValueError(f'client_resolutions must have {num_clients} values')
+    # base_res = params.image_size[0] if isinstance(params.image_size, (list, tuple)) else params.image_size
+    base_res = params.client_resolutions[0]
+
+    client_resolutions = params.client_resolutions
+    if len(client_resolutions) != num_clients:
+        raise ValueError(f'client_resolutions must have {num_clients} values')
     all_resolutions = sorted(set(client_resolutions), reverse=True)
 
     data_path = Path(params.data_root)
@@ -84,12 +83,14 @@ def main(params):
     train_dataset = CelebAMaskHQ(
         data_path,
         'train',
-        resolution=base_res
+        # resolution=base_res
+        resolution=[base_res, base_res]
     )
     val_dataset = CelebAMaskHQ(
         data_path,
         'val',
-        resolution=base_res
+        # resolution=base_res
+        resolution=[base_res, base_res]
     )
 
     train_indices = list(range(len(train_dataset)))
@@ -142,7 +143,8 @@ def main(params):
         )
 
     ignore_index = 0 if params.ignore_background else None
-    n_min = params.batch_size * params.image_size[0] * params.image_size[1] // 16
+    # n_min = params.batch_size * params.image_size[0] * params.image_size[1] // 16
+    n_min = params.batch_size * base_res * base_res // 16
     criterion = OhemLossWrapper(thresh=params.score_thres, min_kept=n_min, ignore_index=ignore_index)
 
     best_miou = 0.0

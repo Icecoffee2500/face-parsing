@@ -40,6 +40,7 @@ weights/
 samples/
 samples2/
 samples_legacy/
+notebooks/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
