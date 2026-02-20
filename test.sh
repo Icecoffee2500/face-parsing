@@ -1,5 +1,21 @@
 #!/usr/bin/env bash
 
+# ViT-CL (512)
+python test.py --weights ./weights/20260202_171003/best_vit_small.pt --backbone vit_small --device-id 0 --resolution 576
+python test.py --weights ./weights/20260202_171003/best_vit_small.pt --backbone vit_small --device-id 0 --resolution 512
+python test.py --weights ./weights/20260202_171003/best_vit_small.pt --backbone vit_small --device-id 0 --resolution 384
+python test.py --weights ./weights/20260202_171003/best_vit_small.pt --backbone vit_small --device-id 0 --resolution 256
+python test.py --weights ./weights/20260202_171003/best_vit_small.pt --backbone vit_small --device-id 0 --resolution 192
+python test.py --weights ./weights/20260202_171003/best_vit_small.pt --backbone vit_small --device-id 0 --resolution 128
+
+# ViT-CL (512 256 128)
+python test.py --weights ./weights/20260203_161017/best_vit_small.pt --backbone vit_small --device-id 0 --resolution 576
+python test.py --weights ./weights/20260203_161017/best_vit_small.pt --backbone vit_small --device-id 0 --resolution 512
+python test.py --weights ./weights/20260203_161017/best_vit_small.pt --backbone vit_small --device-id 0 --resolution 384
+python test.py --weights ./weights/20260203_161017/best_vit_small.pt --backbone vit_small --device-id 0 --resolution 256
+python test.py --weights ./weights/20260203_161017/best_vit_small.pt --backbone vit_small --device-id 0 --resolution 192
+python test.py --weights ./weights/20260203_161017/best_vit_small.pt --backbone vit_small --device-id 0 --resolution 128
+
 # # ViT-FL (512 256 128)
 # python test.py --weights ./weights/20260214_131434/best_vit_small_global.pt --backbone vit_small --device-id 2 --resolution 576
 # python test.py --weights ./weights/20260214_131434/best_vit_small_global.pt --backbone vit_small --device-id 2 --resolution 512
@@ -8,13 +24,13 @@
 # python test.py --weights ./weights/20260214_131434/best_vit_small_global.pt --backbone vit_small --device-id 2 --resolution 192
 # python test.py --weights ./weights/20260214_131434/best_vit_small_global.pt --backbone vit_small --device-id 2 --resolution 128
 
-# ViT-FL+MRKD (512 256 128)
-python test.py --weights ./weights/20260214_131657/best_vit_small_global.pt --backbone vit_small --device-id 2 --resolution 576
-python test.py --weights ./weights/20260214_131657/best_vit_small_global.pt --backbone vit_small --device-id 2 --resolution 512
-python test.py --weights ./weights/20260214_131657/best_vit_small_global.pt --backbone vit_small --device-id 2 --resolution 384
-python test.py --weights ./weights/20260214_131657/best_vit_small_global.pt --backbone vit_small --device-id 2 --resolution 256
-python test.py --weights ./weights/20260214_131657/best_vit_small_global.pt --backbone vit_small --device-id 2 --resolution 192
-python test.py --weights ./weights/20260214_131657/best_vit_small_global.pt --backbone vit_small --device-id 2 --resolution 128
+# # ViT-FL+MRKD (512 256 128)
+# python test.py --weights ./weights/20260214_131657/best_vit_small_global.pt --backbone vit_small --device-id 2 --resolution 576
+# python test.py --weights ./weights/20260214_131657/best_vit_small_global.pt --backbone vit_small --device-id 2 --resolution 512
+# python test.py --weights ./weights/20260214_131657/best_vit_small_global.pt --backbone vit_small --device-id 2 --resolution 384
+# python test.py --weights ./weights/20260214_131657/best_vit_small_global.pt --backbone vit_small --device-id 2 --resolution 256
+# python test.py --weights ./weights/20260214_131657/best_vit_small_global.pt --backbone vit_small --device-id 2 --resolution 192
+# python test.py --weights ./weights/20260214_131657/best_vit_small_global.pt --backbone vit_small --device-id 2 --resolution 128
 
 # # FL (512 256 128)
 # python test.py --weights ./weights/20260127_121759/best_resnet34_global.pt --device-id 0 --resolution 576
